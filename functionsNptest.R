@@ -1,6 +1,5 @@
 
-# Model parameters
-
+## basis expansion
 SobBasis <- function(x, d,n) {
   Phi<-matrix(0,ncol=d+1,nrow=n)
   n <- length(x)
@@ -29,16 +28,12 @@ SobBasis <- function(x, d,n) {
   return(Phi - apply(H, 2, mean))
 }
 
-## Variance 
-
-
+## Variance of h(x)
 var.h<-function(d,U){
   V<-matrix(0,ncol=d,nrow=d)
   for(i in 1:d) {
-    
     for(j in 1:d) {
       V[i,j]<- mean(U[,i]*U[,j])
-      
     }
   }
   return(V)
@@ -46,7 +41,6 @@ var.h<-function(d,U){
 
 
 ## cauchy combination test
-
 CCT <- function(pvals, weights=NULL){
   #### check if there is NA
   if(sum(is.na(pvals)) > 0){
