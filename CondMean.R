@@ -5,7 +5,7 @@ library(MASS)
 library(parallel)
 library(mvtnorm)
 
-CondMean<-function(Y,X,boot.samp,lambdas,lambda1=0.001,d=100,ncores=detectCores() - 1) {
+CondMean<-function(Y,X,boot.samp,lambdas,d=100,ncores=detectCores() - 1) {
   
   n<-length(Y)
   paths<-rmvnorm(boot.samp, sigma=diag(1,nrow=n))
@@ -28,7 +28,7 @@ CondMean<-function(Y,X,boot.samp,lambdas,lambda1=0.001,d=100,ncores=detectCores(
       out.reg1<-predict(fit1, newdata = data.frame(X=X))
       out.reg<-predict(fit1, newdata = data.frame(X=X))
       V<-var.h(d,U)
-      h.hat<-(1/lambda1)*S.theta%*%solve(Pen+lambda*V)
+      h.hat<-S.theta%*%solve(Pen+lambda*V)
       rkhs.norm<-(h.hat)%*%diag(c(1/(2*pi*seq(1,d,length.out=d))^(-4)))%*%t(h.hat)
       V.hat<-h.hat%*%V%*%t(h.hat)
       
@@ -50,7 +50,7 @@ CondMean<-function(Y,X,boot.samp,lambdas,lambda1=0.001,d=100,ncores=detectCores(
         S.theta<-(1/n)*(t(psiu)%*%U)
         Pen<-diag(c(1/(2*pi*seq(1,d,length.out=d))^(-4)))
         
-        h.hat<-(1/lambda1)*S.theta%*%solve(Pen+lambda*V)
+        h.hat<-S.theta%*%solve(Pen+lambda*V)
         U<-SobBasis(X,d,n)
         U<-U[,-1]
         psiu<-matrix(epsilon*(Y-mean(Y))-mean(epsilon)*out.reg1,ncol=1)
@@ -85,8 +85,8 @@ CondMean<-function(Y,X,boot.samp,lambdas,lambda1=0.001,d=100,ncores=detectCores(
     
     ## cauchy combination test
     cct.pvalue<-CCT(lamb.pval,weights=rep(1/length(lambdas),length(lambdas)))
-    p.value.cauchy<-cct.pvalue
-
-    return(list("p-value:aggregate"=aggreg.Pvalue,"p-value:cauchy"=p.value.cauchy))
+    p.value.cauchy<-ifelse(cct.pvalue==0, "< 2.22e-16",cct.pvalue)
+    
+    return(list("aggregate"=paste0('p-value:',aggreg.Pvalue),"cauchy test"=paste0('p-value:',p.value.cauchy)))
   }
   
