@@ -1,6 +1,9 @@
 
 ## conditional mean test 
 source("functionsNptest.R")
+library(MASS)
+library(parallel)
+library(mvtnorm)
 
 CondMean<-function(Y,X,boot.samp,lambdas,lambda1=0.001,d=100,ncores=detectCores() - 1) {
   
