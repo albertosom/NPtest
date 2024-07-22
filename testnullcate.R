@@ -26,6 +26,13 @@ testnullcate<-function(Y,W,A,boot.samp,lambdas,d=100) {
   rr<-matrix(NA,ncol=4,nrow=length(lambdas))
   test.sup<-numeric()
   
+  ## scale the covariate to be between (0,1)
+  x<-W
+  x.scale0 <- x - mean(x)
+  x.scale <- (x.scale0 - ((n+1)/n) * min(x.scale0))/
+    (((n+1)/n)*(max(x.scale0) - min(x.scale0)))
+  W<-x
+  
   for(k in 1:length(lambdas)){
     
     lambda=lambdas[k]
@@ -40,7 +47,7 @@ testnullcate<-function(Y,W,A,boot.samp,lambdas,d=100) {
     # predict on data setting A=0
     Qbar0W <- predict(fit_or ,newdata=data.frame(W,A=0))
     
-    U<-SobBasis(W,d,n)
+    U<-SobolevBasis(W,d,n)
     U<-U[,-1] # not include intercept
     #A=1
     psiu1<-matrix((1/g1W)*(Y-Qbar1W)-mean(Qbar1W)+Qbar1W,ncol=1)
@@ -82,7 +89,6 @@ testnullcate<-function(Y,W,A,boot.samp,lambdas,d=100) {
       
       psiu<-psiu1-psiu0
       h.hat<-S.theta%*%solve(Pen+lambda*V)
-      
   
       #A=1
       psiu1<-matrix(epsilon*((1/g1W)*(Y-Qbar1W)-mean(Qbar1W)+Qbar1W)-mean(epsilon)*Qbar1W,ncol=1)
