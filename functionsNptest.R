@@ -6,6 +6,7 @@
 #' @return An (n*(d+1))-dimensional matrix, where the (i,j) element
 #'          is the evaluation of the j-th basis function for observation i.
 #' @export
+#' 
 SobolevBasis <- function(x, d,n) {
   Phi<-matrix(0,ncol=d+1,nrow=n)
   n <- length(x)
