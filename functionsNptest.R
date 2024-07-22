@@ -1,6 +1,12 @@
 
-## basis expansion
-SobBasis <- function(x, d,n) {
+#'  Calculate the Sobolev basis expansion
+#'
+#' @param x covariate (1 dimensional for now)
+#' @param d Number of basis
+#' @return An (n*(d+1))-dimensional matrix, where the (i,j) element
+#'          is the evaluation of the j-th basis function for observation i.
+#' @export
+SobolevBasis <- function(x, d,n) {
   Phi<-matrix(0,ncol=d+1,nrow=n)
   n <- length(x)
   x.scale0 <- x - mean(x)
@@ -28,7 +34,16 @@ SobBasis <- function(x, d,n) {
   return(Phi - apply(H, 2, mean))
 }
 
-## Variance of h(x)
+
+#'  Calculate the variance of the function h(x)
+#'
+#' @param U (n*d)-dimensional matrix, where the (i,j) element
+#'          is the evaluation of the j-th basis function for observation i.
+#' @param d Number of basis
+#' @return variance of h(x)
+#' 
+#' @export
+#' 
 var.h<-function(d,U){
   V<-matrix(0,ncol=d,nrow=d)
   for(i in 1:d) {
@@ -40,7 +55,27 @@ var.h<-function(d,U){
 }
 
 
-## cauchy combination test
+#' An analytical p-value combination method using the Cauchy distribution
+#'
+#' The \code{CCT} function takes in a numeric vector of p-values, a numeric
+#' vector of non-negative weights, and return the aggregated p-value using Cauchy method.
+#' @param pvals a numeric vector of p-values, where each of the element is
+#' between 0 to 1, to be combined.
+#' @param weights a numeric vector of non-negative weights. If \code{NULL}, the
+#' equal weights are assumed (default = NULL).
+#' @return The aggregated p-value combining p-values from the vector \code{pvals}.
+#' @examples pvalues <- c(2e-02, 4e-04, 0.2, 0.1, 0.8)
+#' @examples CCT(pvals = pvalues)
+#' @references Liu, Y., & Xie, J. (2020). Cauchy combination test: a powerful test
+#' with analytic p-value calculation under arbitrary dependency structures.
+#' \emph{Journal of the American Statistical Association}, \emph{115}(529), 393-402.
+#' (\href{https://doi.org/10.1080/01621459.2018.1554485}{pub})
+#' @references Liu, Y., et al. (2019). Acat: A fast and powerful p value combination
+#' method for rare-variant analysis in sequencing studies.
+#' \emph{The American Journal of Human Genetics}, \emph{104}(3), 410-421.
+#' (\href{https://doi.org/10.1016/j.ajhg.2019.01.002}{pub})
+#' @export
+
 CCT <- function(pvals, weights=NULL){
   #### check if there is NA
   if(sum(is.na(pvals)) > 0){
@@ -93,5 +128,40 @@ CCT <- function(pvals, weights=NULL){
     pval <- 1-pcauchy(cct.stat)
   }
   return(pval)
+}
+
+
+#'  Function to compute p-value from aggregating the test statistics
+#'
+#' @param pvals p-values from different lambda value
+#' @param test.stats Test statistics for different lambda values
+#' @param samples.null Multiplier bootstrap sample for approximating the distribution
+#'                             of the test statistic for different lambda values.
+#' 
+#' @return The aggregated p-value 
+#' 
+#' @export
+#' 
+aggreg.pvalue<-function(pvals,test.stats,samples.null){
+  
+  ## aggregating the test statistic
+  pvals.aggreg<-numeric()
+  boot.samp<-nrow(samples.null)
+  for(b in 1:boot.samp ){
+    mu<-apply(samples.null[-b,],2,mean)
+    Ts.b<-samples.null[b,]
+    sigma<- sqrt(apply(samples.null[-b,],2,var))
+    pvals.aggreg[b]<-max(abs(( mu- Ts.b)/sigma))
+  }
+  
+  Q.b<-pvals.aggreg
+  
+  mu<-apply(samples.null,2,mean)
+  sigma<- sqrt(apply(samples.null,2,var))
+  Q.0<- max(abs(mu-test.stats)/sigma)
+  
+  aggreg.pvalue<- (1/(boot.samp+1))*(1+ sum(ifelse(Q.b>Q.0,T,F)))
+  aggreg.Pvalue<-aggreg.pvalue     
+  return(aggreg.Pvalue)
 }
 
