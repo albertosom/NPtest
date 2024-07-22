@@ -25,12 +25,19 @@ CondMean<-function(Y,X,boot.samp,lambdas,d=100) {
   rr<-matrix(NA,ncol=4,nrow=length(lambdas))
   test.sup<-numeric()
   
+  ## scale the covariate to be between (0,1)
+  x<-X
+  x.scale0 <- x - mean(x)
+  x.scale <- (x.scale0 - ((n+1)/n) * min(x.scale0))/
+    (((n+1)/n)*(max(x.scale0) - min(x.scale0)))
+  X<-x
+  
     for(k in 1:length(lambdas)){
       
       # lambda1<-0.001
       lambda=lambdas[k]
       
-      U<-SobBasis(X,d,n)
+      U<-SobolevBasis(X,d,n)
       U<-U[,-1] # not include intercept
       psiu<-matrix(Y-mean(Y),ncol=1)
       S.theta<-(1/n)*(t(psiu)%*%U)
@@ -43,7 +50,7 @@ CondMean<-function(Y,X,boot.samp,lambdas,d=100) {
       rkhs.norm<-(h.hat)%*%diag(c(1/(2*pi*seq(1,d,length.out=d))^(-4)))%*%t(h.hat)
       V.hat<-h.hat%*%V%*%t(h.hat)
       
-      U<-SobBasis(X,d,n)
+      U<-SobolevBasis(X,d,n)
       U<-U[,-1] # not include intercept
       psiu<-matrix(Y-mean(Y),ncol=1)
       S.theta<-(1/n)*(t(psiu)%*%U)
