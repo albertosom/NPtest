@@ -28,11 +28,11 @@ pvalue.cauchy<-CCT(pvals=rr$p.values, weights=NULL)
 
 n=100
 A<-rbinom(n,size=1,prob=0.5)
-#W<-rnorm(n,0,1)
-W<-runif(n,-1,1)
+W<-rnorm(n,0,1)
+#W<-runif(n,-1,1)
 epsilon<-rnorm(n,0,1)
-#Y<- 0.5 + 0.5*W + 10*A + 1.6*W*A + epsilon
-Y<-0.4 + W + epsilon
+Y<- 0.5 + 0.5*W + 10*A + 1.6*W*A + epsilon
+#Y<-0.4 + W + epsilon
 #Y<-0.4 + 0.05*W + 0.8*A
 
 ## approach by Racine (2006)
